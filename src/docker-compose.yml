@@ -8,20 +8,20 @@ services:
       - back-network
   ui:
     build: ./ui
-    image: ${USERNAME}/${UI_VERSION}
+    image: ${USERNAME}/ui
     ports:
       - ${UI_PORT}
     networks:
       - front-network
   post:
     build: ./post-py
-    image: ${USERNAME}/post:2.0
+    image: ${USERNAME}/post
     networks:
       - back-network
       - front-network
   comment:
     build: ./comment
-    image: ${USERNAME}/comment:1.0
+    image: ${USERNAME}/comment
     networks:
       - back-network
       - front-network

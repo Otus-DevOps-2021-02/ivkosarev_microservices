@@ -1,0 +1,107 @@
+version: '3.3'
+
+services:
+  post_db:
+    env_file:
+      - .env
+    image: mongo:${MON_VER}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    volumes:
+      - post_db:/data/db
+    networks:
+      - back-network
+      - front-network
+
+  ui:
+    env_file:
+      - .env
+    image: ${DOCKER_USERNAME}/ui:${UI_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    ports:
+      - ${UI_PORT}
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
+    networks:
+      - back-network
+      - front-network
+
+  post:
+    env_file:
+      - .env
+    image: ${DOCKER_USERNAME}/post:${POST_VERSION}
+    environment:
+      - POST_DATABASE_HOST=post_db
+      - POST_DATABASE=posts
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    depends_on:
+      - post_db
+    ports:
+      - "5000:5000"
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
+    networks:
+      - back-network
+      - front-network
+
+  comment:
+    env_file:
+      - .env
+    image: ${DOCKER_USERNAME}/comment:${COMMENT_VERSION}
+    environment:
+      - ZIPKIN_ENABLED=${ZIPKIN_ENABLED}
+    networks:
+      - back-network
+      - front-network
+
+  prometheus:
+    image: ${DOCKER_USERNAME}/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+    command: # Передаем доп параметры в командной строке
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d' # Задаем время хранения метрик в 1 день
+    networks:
+      - back-network
+      - front-network
+
+  node-exporter:
+    image: prom/node-exporter:v0.15.2
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    networks:
+      - back-network
+      - front-network
+
+volumes:
+  post_db:
+  prometheus_data:
+
+networks:
+  back-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.2.0/24
+  front-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.1.0/24
