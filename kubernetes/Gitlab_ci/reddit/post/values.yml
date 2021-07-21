@@ -1,0 +1,14 @@
+---
+service:
+  internalPort: 5000
+  externalPort: 5000
+
+image:
+  repository: kirillkotovsky/post
+  tag: latest
+
+databaseHost:
+postHost:
+postPort:
+commentHost:
+commentPort:

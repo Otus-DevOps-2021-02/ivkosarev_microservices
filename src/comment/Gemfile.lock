@@ -37,6 +37,7 @@ DEPENDENCIES
   mongo
   prometheus-client
   puma
+
   rack
   rufus-scheduler
   sinatra (~> 2.0.2)

@@ -1,0 +1,20 @@
+comment:
+  image:
+    repository: kirillkotovsky/comment
+    tag: latest
+  service:
+    externalPort: 9292
+
+post:
+  image:
+    repository: kirillkotovsky/post
+    tag: latest
+  service:
+    externalPort: 5000
+
+ui:
+  image:
+    repository: kirillkotovsky/ui
+    tag: latest
+  service:
+    externalPort: 9292
